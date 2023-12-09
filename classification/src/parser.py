@@ -5,16 +5,13 @@ import shutil
 import logging
 import pandas as pd
 import time
-import aiohttp
-
-# строка в формате д.мм.гггг_чч:мм
-time_now = f'{time.localtime()[2]}-{time.localtime()[1]}-{time.localtime()[0]}_{time.localtime()[3]}-{time.localtime()[4]}-{time.localtime()[5]}'
+import asyncio
 
 logging.basicConfig(
     level=logging.INFO,
     filemode="w",
-    filename=f"classification/logs/parser/{time_now}.log",
-    format="%(levelname)s: %(message)s",
+    filename=f"classification/logs/parser.log",
+    format="%(asctime)s:%(levelname)s:%(message)s",
     encoding="utf8"
 )
 
@@ -37,7 +34,6 @@ def connect (url: str) -> requests.Response:
     return response if code == 200 else None
 
 def get_categories () -> dict:
-    print(connect(ARCHIVE_PAGE))
     response = connect(ARCHIVE_PAGE)
     
     if response != None:
@@ -55,3 +51,56 @@ def get_categories () -> dict:
         return categories
     else: return None
 
+
+# TODO: сделать более аккуратный код
+# TODO: покрыть логами
+async def get_docs_url (name: str, url: str, days_ago: int=0) -> dict:
+        Urls = {}   
+        response = connect(url)
+
+        if days_ago > 0:
+            link_prev = f'{MAIN_PAGE}/{bfs(response.text, "html.parser").find("a", {"class": "ui-button ui-button--standart ui-nav ui-nav--prev"}).get("href")}'
+
+            links = []
+            for day in range(1, days_ago+1):
+                response_prev = connect(link_prev)
+                link_prev = f'{MAIN_PAGE}/{bfs(response_prev.text, "html.parser").find("a", {"class": "ui-button ui-button--standart ui-nav ui-nav--prev"}).get("href")}'
+                links.append(link_prev)
+            
+            links_in = []
+            for link_0 in links:
+                response_link = connect(link_0)
+
+                links_resset = bfs(response_link.text, "html.parser").find_all("a", {"class": "uho__link uho__link--overlay"})
+                links = []
+
+                for link_1 in links_resset:
+                    links_in.append(f"{MAIN_PAGE}/{link_1.get('href')}")
+
+            Urls[name] = links_in               
+        else:
+            links_resset = bfs(response.text, "html.parser").find_all("a", {"class": "uho__link uho__link--overlay"})
+            links = []
+
+            for link in links_resset:
+                links.append(f"{MAIN_PAGE}/{link.get('href')}")
+
+            Urls[name] = links
+    
+        return Urls
+
+
+async def parser ():
+    tasks = []
+    loop = asyncio.get_event_loop()
+    categories = get_categories()
+
+    for name, url in categories.items():
+        logging.info(f'берутся ссылки из категории = {name} || url = {url}')
+        tasks.append(loop.create_task( get_docs_url(name, url, days_ago=2) ))
+
+    docs = await asyncio.gather(*tasks)
+    
+    
+
+asyncio.run(parser ())
