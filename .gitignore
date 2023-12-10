@@ -1,3 +1,4 @@
 logs/
 data/texts/
 data/docs.csv
+data/preprocessed_docs.csv
