@@ -51,9 +51,6 @@ def get_categories () -> dict:
         return categories
     else: return None
 
-
-# TODO: сделать более аккуратный код
-# TODO: покрыть логами
 async def get_docs_url (name: str, url: str, days_ago: int=0) -> dict:
         Urls = {}   
         response = connect(url)
@@ -61,46 +58,87 @@ async def get_docs_url (name: str, url: str, days_ago: int=0) -> dict:
         if days_ago > 0:
             link_prev = f'{MAIN_PAGE}/{bfs(response.text, "html.parser").find("a", {"class": "ui-button ui-button--standart ui-nav ui-nav--prev"}).get("href")}'
 
-            links = []
+            # список ссылок по рубрике name за определенное количество дней
+            # на страницах в dayly_links находится список новостей за определенную дату
+            dayly_links = []
             for day in range(1, days_ago+1):
                 response_prev = connect(link_prev)
                 link_prev = f'{MAIN_PAGE}/{bfs(response_prev.text, "html.parser").find("a", {"class": "ui-button ui-button--standart ui-nav ui-nav--prev"}).get("href")}'
-                links.append(link_prev)
-            
-            links_in = []
-            for link_0 in links:
-                response_link = connect(link_0)
+                logging.info(f'берется список ссылок за дней назад = {day} || рубрика = {name} || link = {link_prev}')
+                dayly_links.append(link_prev)
+
+            # список с новостями за определенный день из dayly_links
+            docs_links = []
+            for link in dayly_links:
+                response_link = connect(link)
 
                 links_resset = bfs(response_link.text, "html.parser").find_all("a", {"class": "uho__link uho__link--overlay"})
                 links = []
 
-                for link_1 in links_resset:
-                    links_in.append(f"{MAIN_PAGE}/{link_1.get('href')}")
-
-            Urls[name] = links_in               
+                for link in links_resset:
+                    logging.info(f'берутся ссылки || рубрика = {name} || doc = {MAIN_PAGE}/{link.get("href")}')
+                    docs_links.append(f"{MAIN_PAGE}/{link.get('href')}")
+                    
+            
+            Urls[name] = docs_links  
+                        
         else:
             links_resset = bfs(response.text, "html.parser").find_all("a", {"class": "uho__link uho__link--overlay"})
             links = []
 
             for link in links_resset:
                 links.append(f"{MAIN_PAGE}/{link.get('href')}")
+                logging.info(f'берутся ссылки || рубрика = {name} || doc = {MAIN_PAGE}/{link.get("href")}')
 
             Urls[name] = links
-    
+
         return Urls
 
+async def get_text_from_doc (name: str, url: str) -> dict:
+    text_dict = {
+        "name": name,
+        "text": ''
+    }
+    text_list = []
 
-async def parser ():
-    tasks = []
-    loop = asyncio.get_event_loop()
+    response = connect(url)
+    soup = bfs(response.text, "html.parser")
+
+    title = soup.find("h1", {"class": "doc_header__name js-search-mark"}).text.strip() + "."
+    text_list.append(title)
+
+    texts_from_doc = soup.find_all("p", {"class": "doc__text"})
+
+    for text in texts_from_doc:
+        text_list.append(text.text)
+    
+    text_dict["text"] = "".join(text_list)
+
+    return text_dict
+
+async def parser (days_ago: int=0):
+    tasks_categories = []
+    loop_categories = asyncio.get_event_loop()
     categories = get_categories()
 
     for name, url in categories.items():
         logging.info(f'берутся ссылки из категории = {name} || url = {url}')
-        tasks.append(loop.create_task( get_docs_url(name, url, days_ago=2) ))
+        tasks_categories.append(loop_categories.create_task( get_docs_url(name, url, days_ago) ))
 
-    docs = await asyncio.gather(*tasks)
-    
-    
+    links_dict = await asyncio.gather(*tasks_categories)
 
-asyncio.run(parser ())
+    tasks_docs = []
+    loop_docs = asyncio.get_event_loop()
+    for doc_dict in links_dict:
+        for name, links in doc_dict.items():
+            for link in links:
+                logging.info(f'берется текст из рубрики = {name} || {link}')
+                tasks_docs.append(loop_docs.create_task( get_text_from_doc(name, link) ))
+
+    docs_dict = await asyncio.gather(*tasks_docs)
+    
+    for block in docs_dict:
+        fpath = f'classification/data/texts/{block["name"]}.txt'
+        with open(fpath, mode='a+', encoding='utf8') as file:
+            logging.info(f'записывается текст из рубрики = {name} || {link} || путь = {fpath}')
+            file.write(block['text'])
