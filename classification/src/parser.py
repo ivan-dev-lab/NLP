@@ -1,10 +1,8 @@
 import requests
 from bs4 import BeautifulSoup as bfs
 import os
-import shutil
 import logging
 import pandas as pd
-import time
 import asyncio
 
 logging.basicConfig(
@@ -116,7 +114,7 @@ async def get_text_from_doc (name: str, url: str) -> dict:
 
     return text_dict
 
-async def parser (days_ago: int=0):
+async def parser (path_texts: str='data/', days_ago: int=0):
     tasks_categories = []
     loop_categories = asyncio.get_event_loop()
     categories = get_categories()
@@ -138,7 +136,20 @@ async def parser (days_ago: int=0):
     docs_dict = await asyncio.gather(*tasks_docs)
     
     for block in docs_dict:
-        fpath = f'classification/data/texts/{block["name"]}.txt'
+        fpath = f'{path_texts}/texts/{block["name"]}.txt'
         with open(fpath, mode='a+', encoding='utf8') as file:
             logging.info(f'записывается текст из рубрики = {name} || {link} || путь = {fpath}')
             file.write(block['text'])
+
+def to_df (path_texts: str) -> pd.DataFrame:
+    texts = []
+    if os.path.exists(path_texts):
+        for path in os.listdir(path_texts):
+            with open(f'{path_texts}/{path}', mode='r', encoding='utf8') as doc_file:
+                name = path.split('.')[0]
+                text = doc_file.readlines()[0]
+                texts.append({'Topic': name, 'Text': text})
+
+        data = pd.DataFrame(data=texts)
+        return data
+    else: raise ValueError(f'каталога {path_texts} не существует.')
