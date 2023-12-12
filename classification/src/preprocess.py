@@ -4,7 +4,15 @@ import asyncio
 import string
 import re
 import pymorphy3
+import logging
 
+logging.basicConfig (
+    filename='classification/logs/preprocess.log',
+    filemode='w',
+    level=logging.INFO,
+    format='%(asctime)s:%(levelname)s:%(message)s',
+    encoding='utf8'
+)
 
 async def clean_text (text: str) -> str:
     cleaned_text = []
@@ -36,14 +44,16 @@ async def lemmatize (text) -> str:
     return ' '.join(lemmatized_text)   
 
 # docs_path - путь до файла csv с текстами
-async def preprocess (docs_path: str, need_save: bool=False, save_path: str='data/docs.csv') -> pd.DataFrame:
+async def preprocess (docs_path: str, need_save: bool=False, save_path: str='data/preprocessed_docs.csv') -> pd.DataFrame:
     docs_df = pd.read_csv(docs_path, index_col=[0])
     tasks = []
     loop = asyncio.get_event_loop()
 
-    for text in docs_df['Text']:
+    for index,text in enumerate(docs_df['Text']):
         cleaned_text_task = loop.create_task(clean_text(text))
+        logging.info(f'очищен текст {index}/{len(docs_df["Text"])} || {(index*100)/len(docs_df["Text"])}')
         lemmatize_task = loop.create_task(lemmatize(cleaned_text_task))
+        logging.info(f'лемматизирован текст {index}/{len(docs_df["Text"])} || {(index*100)/len(docs_df["Text"])}')
         tasks.append(lemmatize_task)
 
     preprocessed_texts = await asyncio.gather(*tasks)
