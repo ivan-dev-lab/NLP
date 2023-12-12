@@ -56,13 +56,13 @@ async def get_docs_url (name: str, url: str, days_ago: int=0) -> dict:
         if days_ago > 0:
             link_prev = f'{MAIN_PAGE}/{bfs(response.text, "html.parser").find("a", {"class": "ui-button ui-button--standart ui-nav ui-nav--prev"}).get("href")}'
 
-            # список ссылок по рубрике name за определенное количество дней
+            # список ссылок по категории name за определенное количество дней
             # на страницах в dayly_links находится список новостей за определенную дату
             dayly_links = []
             for day in range(1, days_ago+1):
                 response_prev = connect(link_prev)
                 link_prev = f'{MAIN_PAGE}/{bfs(response_prev.text, "html.parser").find("a", {"class": "ui-button ui-button--standart ui-nav ui-nav--prev"}).get("href")}'
-                logging.info(f'берется список ссылок за дней назад = {day} || рубрика = {name} || link = {link_prev}')
+                logging.info(f'берется список ссылок за дней назад = {day} || категория = {name} || link = {link_prev}')
                 dayly_links.append(link_prev)
 
             # список с новостями за определенный день из dayly_links
@@ -74,7 +74,7 @@ async def get_docs_url (name: str, url: str, days_ago: int=0) -> dict:
                 links = []
 
                 for link in links_resset:
-                    logging.info(f'берутся ссылки || рубрика = {name} || doc = {MAIN_PAGE}/{link.get("href")}')
+                    logging.info(f'берутся ссылки || категория = {name} || doc = {MAIN_PAGE}/{link.get("href")}')
                     docs_links.append(f"{MAIN_PAGE}/{link.get('href')}")
                     
             
@@ -86,7 +86,7 @@ async def get_docs_url (name: str, url: str, days_ago: int=0) -> dict:
 
             for link in links_resset:
                 links.append(f"{MAIN_PAGE}/{link.get('href')}")
-                logging.info(f'берутся ссылки || рубрика = {name} || doc = {MAIN_PAGE}/{link.get("href")}')
+                logging.info(f'берутся ссылки || категория = {name} || doc = {MAIN_PAGE}/{link.get("href")}')
 
             Urls[name] = links
 
@@ -94,8 +94,8 @@ async def get_docs_url (name: str, url: str, days_ago: int=0) -> dict:
 
 async def get_text_from_doc (name: str, url: str) -> dict:
     text_dict = {
-        "name": name,
-        "text": ''
+        "Topic": name,
+        "Text": ''
     }
     text_list = []
 
@@ -110,11 +110,11 @@ async def get_text_from_doc (name: str, url: str) -> dict:
     for text in texts_from_doc:
         text_list.append(text.text)
     
-    text_dict["text"] = "".join(text_list)
+    text_dict["Text"] = "".join(text_list)
 
     return text_dict
 
-async def parser (texts_path: str='data/', days_ago: int=0):
+async def parser (save_path: str, days_ago: int=0):
     tasks_categories = []
     loop_categories = asyncio.get_event_loop()
     categories = get_categories()
@@ -130,27 +130,13 @@ async def parser (texts_path: str='data/', days_ago: int=0):
     for doc_dict in links_dict:
         for name, links in doc_dict.items():
             for link in links:
-                logging.info(f'берется текст из рубрики = {name} || {link}')
+                logging.info(f'берется текст из категории = {name} || {link}')
                 tasks_docs.append(loop_docs.create_task( get_text_from_doc(name, link) ))
 
     docs_dict = await asyncio.gather(*tasks_docs)
     
-    for block in docs_dict:
-        fpath = f'{texts_path}/texts/{block["name"]}.txt'
-        with open(fpath, mode='a+', encoding='utf8') as file:
-            logging.info(f'записывается текст из рубрики = {name} || {link} || путь = {fpath}')
-            file.write(block['text'])
+    result_data = []
+    for block in docs_dict: result_data.append({'Topic': block['Topic'], 'Text': block['Text']})
 
-def to_df (texts_path: str, need_save: bool=False, save_path: str='data/docs.csv') -> pd.DataFrame:
-    texts = []
-    if os.path.exists(texts_path):
-        for path in os.listdir(texts_path):
-            with open(f'{texts_path}/{path}', mode='r', encoding='utf8') as doc_file:
-                name = path.split('.')[0]
-                text = doc_file.readlines()[0]
-                texts.append({'Topic': name, 'Text': text})
-
-        data = pd.DataFrame(data=texts)
-        if need_save: data.to_csv(save_path)
-        return data
-    else: raise ValueError(f'каталога {texts_path} не существует.')
+    data = pd.DataFrame(data=result_data).sample(frac=1).reset_index(drop=True)
+    data.to_csv(save_path)
