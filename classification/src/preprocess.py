@@ -64,4 +64,5 @@ async def preprocess (docs_path: str, need_save: bool=False, save_path: str='dat
         if save_path != docs_path: docs_df.to_csv(save_path)
         else: raise ValueError(f'save_path не должен совпадать с docs_path ({save_path} = {docs_path})')
 
+    logging.info(f'процесс предобработки завершен, данные сохранены в {save_path}')
     return docs_df

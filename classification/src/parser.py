@@ -140,3 +140,5 @@ async def parser (save_path: str, days_ago: int=0):
 
     data = pd.DataFrame(data=result_data).sample(frac=1).reset_index(drop=True)
     data.to_csv(save_path)
+
+    logging.info(f'процесс парсинга завершен, данные сохранены в {save_path}')
