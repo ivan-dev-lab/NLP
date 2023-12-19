@@ -2,3 +2,8 @@ logs/
 data/texts/
 data/docs.csv
 data/preprocessed_docs.csv
+classification/models/DecisionTreeClassifier.pkl
+classification/models/ExtraTreeClassifier.pkl
+classification/models/ExtraTreesClassifier.pkl
+classification/models/KNeighborsClassifier.pkl
+classification/models/RandomForestClassifier.pkl
