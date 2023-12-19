@@ -6,12 +6,16 @@ from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 import pickle
+import re
 
 # data_path - путь к уже предобработанным данным
 # models_path - пути для сохранения моделей
 # функция возвращает результаты обучения моделей
-def train (data_path: str, limit: int, models_path: [], sklearn_models: list=[]) -> dict:
-    preprocessed_data = pd.read_csv('data/preprocessed_docs.csv', index_col=[0]).iloc[0:limit]
+def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit=None) -> dict:
+    models_results = {'sklearn_results': list, }
+
+    if limit: preprocessed_data = pd.read_csv('data/preprocessed_docs.csv', index_col=[0]).iloc[0:limit]
+    else: preprocessed_data = pd.read_csv('data/preprocessed_docs.csv', index_col=[0])
     
     one_hot_encoded_labels = pd.get_dummies(preprocessed_data['Topic'], prefix='Topic')
     encoded_data = pd.concat([preprocessed_data, one_hot_encoded_labels], axis=1).replace({True: 1, False: 0})
@@ -29,8 +33,13 @@ def train (data_path: str, limit: int, models_path: [], sklearn_models: list=[])
     if len(sklearn_models) > 0 and len(sklearn_models) == len(models_path):
         for index, model in enumerate(sklearn_models):
             current_result = {'model': str, 'accuracy': float}
-            current_result['model'] = ...
 
+            # регулярное выражение для получения названия модели из пути для сохранения
+            # 'models/DecisionTreeClassifier.pkl' -> DecisionTreeClassifier
+            model_name = ''.join([match.group()[1:len(match.group())-1] for match in re.finditer(r"/[A-Z]\w*.", models_path[index])])
+
+            current_result['model'] = model_name
+            
             model = sklearn_models[index]
             model.fit(vect_x_train, y_train)
 
@@ -40,6 +49,14 @@ def train (data_path: str, limit: int, models_path: [], sklearn_models: list=[])
 
             sklearn_results.append(current_result)
 
+            with open(models_path[index], mode='wb+') as model_file: pickle.dump(model, model_file)
 
+        models_results['sklearn_results'] = sklearn_results
+    
+    return models_results
 
-train ('data/preprocessed_docs.csv', [], 10)
+sklearn_models = [DecisionTreeClassifier(), ExtraTreeClassifier(), ExtraTreesClassifier(), RandomForestClassifier(), KNeighborsClassifier()]
+path_models = ['classification/models/DecisionTreeClassifier.pkl', 'classification/models/ExtraTreeClassifier.pkl', 'classification/models/ExtraTreesClassifier.pkl', 'classification/models/RandomForestClassifier.pkl', 'classification/models/KNeighborsClassifier.pkl',]
+
+results = train ('data/preprocessed_docs.csv', sklearn_models, path_models, limit=None)
+print(results)
