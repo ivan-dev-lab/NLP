@@ -8,7 +8,7 @@ import logging
 
 logging.basicConfig (
     filename='classification/logs/preprocess.log',
-    filemode='w',
+    filemode='w+',
     level=logging.INFO,
     format='%(asctime)s:%(levelname)s:%(message)s',
     encoding='utf8'

@@ -7,7 +7,7 @@ import asyncio
 
 logging.basicConfig(
     level=logging.INFO,
-    filemode="w",
+    filemode="w+",
     filename=f"classification/logs/parser.log",
     format="%(asctime)s:%(levelname)s:%(message)s",
     encoding="utf8"
