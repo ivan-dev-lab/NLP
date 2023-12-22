@@ -1,9 +1,6 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
-from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 import pickle
 import re
@@ -13,9 +10,8 @@ import re
 # функция возвращает результаты обучения моделей
 def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit=None) -> dict:
     models_results = {'sklearn_results': list, }
-
-    if limit: preprocessed_data = pd.read_csv('data/preprocessed_docs.csv', index_col=[0]).iloc[0:limit]
-    else: preprocessed_data = pd.read_csv('data/preprocessed_docs.csv', index_col=[0])
+    if limit: preprocessed_data = pd.read_csv(data_path, index_col=[0]).iloc[0:limit]
+    else: preprocessed_data = pd.read_csv(data_path, index_col=[0])
     
     one_hot_encoded_labels = pd.get_dummies(preprocessed_data['Topic'], prefix='Topic')
     encoded_data = pd.concat([preprocessed_data, one_hot_encoded_labels], axis=1).replace({True: 1, False: 0})
@@ -49,14 +45,12 @@ def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit
 
             sklearn_results.append(current_result)
 
-            with open(models_path[index], mode='wb+') as model_file: pickle.dump(model, model_file)
+            with open(models_path[index], mode='wb+') as model_file: 
+                pickle.dump(model, model_file)
 
         models_results['sklearn_results'] = sklearn_results
+
+    with open('classification/models/TF-IDF.pkl', mode='wb+') as vectorizer_file: 
+        pickle.dump(vectorizer, vectorizer_file)
     
     return models_results
-
-sklearn_models = [DecisionTreeClassifier(), ExtraTreeClassifier(), ExtraTreesClassifier(), RandomForestClassifier(), KNeighborsClassifier()]
-path_models = ['classification/models/DecisionTreeClassifier.pkl', 'classification/models/ExtraTreeClassifier.pkl', 'classification/models/ExtraTreesClassifier.pkl', 'classification/models/RandomForestClassifier.pkl', 'classification/models/KNeighborsClassifier.pkl',]
-
-results = train ('data/preprocessed_docs.csv', sklearn_models, path_models, limit=None)
-print(results)
