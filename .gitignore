@@ -7,4 +7,5 @@ classification/models/ExtraTreeClassifier.pkl
 classification/models/ExtraTreesClassifier.pkl
 classification/models/KNeighborsClassifier.pkl
 classification/models/RandomForestClassifier.pkl
+classification/models/TF-IDF.pkl
 __pycache__
