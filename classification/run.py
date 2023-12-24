@@ -4,6 +4,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pickle
 import re
+import time
+from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import MultinomialNB
 
 # data_path - путь к уже предобработанным данным
 # models_path - пути для сохранения моделей
@@ -36,7 +41,7 @@ def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit
 
             current_result['model'] = model_name
             
-            model = sklearn_models[index]
+            model = sklearn_models[index]()
             model.fit(vect_x_train, y_train)
 
             y_pred = model.predict(vect_x_test)
@@ -54,3 +59,23 @@ def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit
         pickle.dump(vectorizer, vectorizer_file)
     
     return models_results
+
+
+sklearn_models = [DecisionTreeClassifier, ExtraTreeClassifier, RandomForestClassifier, ExtraTreesClassifier, KNeighborsClassifier]
+models_path = ['classification/models/DecisionTreeClassifier.pkl', 'classification/models/ExtraTreeClassifier.pkl', 'classification/models/RandomForestClassifier.pkl', 'classification/models/ExtraTreesClassifier.pkl', 'classification/models/KNeighborsClassifier.pkl']
+
+start_time = time.time()
+result = train('data/preprocessed_docs.csv', sklearn_models, models_path)
+
+with open('classification/models/results.txt', mode='a+', encoding='utf8') as result_file:
+    result_file.write('результаты для обработанного текста с глаголами и существительными\n')
+    for group, results in result.items():
+        result_file.write(f'{group}:\n')
+        for models in results:
+            result_file.write(f'{results["model"]}: {results["accuracy"]}\n')
+
+                
+        end_time = time.time()-start_time
+        result_file.write(f'время на обучение - {end_time}')
+                
+# TODO: посмотреть как изменятся показатели модели если лемматищировать все слова
