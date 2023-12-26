@@ -44,7 +44,7 @@ async def lemmatize (text) -> str:
     return ' '.join(lemmatized_text)   
 
 # docs_path - путь до файла csv с текстами
-async def preprocess (docs_path: str, need_save: bool=False, save_path: str='data/preprocessed_docs.csv') -> pd.DataFrame:
+async def preprocess (docs_path: str, save_path: str=None) -> pd.DataFrame:
     docs_df = pd.read_csv(docs_path, index_col=[0])
     tasks = []
     loop = asyncio.get_event_loop()
@@ -60,7 +60,7 @@ async def preprocess (docs_path: str, need_save: bool=False, save_path: str='dat
     
     docs_df['Text'] = preprocessed_texts
 
-    if need_save:
+    if save_path != None:
         if save_path != docs_path: docs_df.to_csv(save_path)
         else: raise ValueError(f'save_path не должен совпадать с docs_path ({save_path} = {docs_path})')
 
