@@ -4,16 +4,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pickle
 import re
-import time
-from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import MultinomialNB
 
 # data_path - путь к уже предобработанным данным
-# models_path - пути для сохранения моделей
+# models - словарь, содержащий функции вызова sklearn моделей и функцию создания модели keras 
+# структура словаря models: список с моделями sklearn 'sklearn_models', список путей для сохранения - 'sklearn_models_path'
+# структура словаря models: список с моделью/моделями keras 'keras_models', список путей для сохранения - 'keras_models_path'
 # функция возвращает результаты обучения моделей
-def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit=None) -> dict:
+def train (data_path: str, models: dict,  limit=None) -> dict:
     models_results = {'sklearn_results': list, }
     if limit: preprocessed_data = pd.read_csv(data_path, index_col=[0]).iloc[0:limit]
     else: preprocessed_data = pd.read_csv(data_path, index_col=[0])
@@ -31,16 +28,19 @@ def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit
     vect_x_test = vectorizer.transform(raw_documents=x_test)
 
     sklearn_results = []
-    if len(sklearn_models) > 0 and len(sklearn_models) == len(models_path):
+    sklearn_models = models['sklearn_models']
+    sklearn_models_path = models['sklearn_models_path']
+    
+    if len(sklearn_models) > 0 and len(sklearn_models) == len(sklearn_models_path):
         for index, model in enumerate(sklearn_models):
             current_result = {'model': str, 'accuracy': float}
 
             # регулярное выражение для получения названия модели из пути для сохранения
             # 'models/DecisionTreeClassifier.pkl' -> DecisionTreeClassifier
-            model_name = ''.join([match.group()[1:len(match.group())-1] for match in re.finditer(r"/[A-Z]\w*.", models_path[index])])
+            model_name = ''.join([match.group()[1:len(match.group())-1] for match in re.finditer(r"/[A-Z]\w*.", sklearn_models_path[index])])
 
             current_result['model'] = model_name
-            
+
             model = sklearn_models[index]()
             model.fit(vect_x_train, y_train)
 
@@ -50,7 +50,7 @@ def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit
 
             sklearn_results.append(current_result)
 
-            with open(models_path[index], mode='wb+') as model_file: 
+            with open(sklearn_models_path[index], mode='wb+') as model_file: 
                 pickle.dump(model, model_file)
 
         models_results['sklearn_results'] = sklearn_results
@@ -59,23 +59,3 @@ def train (data_path: str, sklearn_models: list=[], models_path: list=[],  limit
         pickle.dump(vectorizer, vectorizer_file)
     
     return models_results
-
-
-sklearn_models = [DecisionTreeClassifier, ExtraTreeClassifier, RandomForestClassifier, ExtraTreesClassifier, KNeighborsClassifier]
-models_path = ['classification/models/DecisionTreeClassifier.pkl', 'classification/models/ExtraTreeClassifier.pkl', 'classification/models/RandomForestClassifier.pkl', 'classification/models/ExtraTreesClassifier.pkl', 'classification/models/KNeighborsClassifier.pkl']
-
-start_time = time.time()
-result = train('data/preprocessed_docs.csv', sklearn_models, models_path)
-
-with open('classification/models/results.txt', mode='a+', encoding='utf8') as result_file:
-    result_file.write('результаты для обработанного текста с глаголами и существительными\n')
-    for group, results in result.items():
-        result_file.write(f'{group}:\n')
-        for models in results:
-            result_file.write(f'{results["model"]}: {results["accuracy"]}\n')
-
-                
-        end_time = time.time()-start_time
-        result_file.write(f'время на обучение - {end_time}')
-                
-# TODO: посмотреть как изменятся показатели модели если лемматищировать все слова
