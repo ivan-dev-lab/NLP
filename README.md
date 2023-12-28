@@ -2,7 +2,7 @@
 
 ## Структура
 В проекте представлено:
-- [Классификация текста на категории `classification/`](https://github.com/ivan-dev-lab/NLP?tab=readme-ov-file#классификация-текста-на-категории)
+- [Классификация текста на категории `classification/`](https://github.com/ivan-dev-lab/NLP/tree/dev?tab=readme-ov-file#%D0%BA%D0%BB%D0%B0%D1%81%D1%81%D0%B8%D1%84%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D1%8F-%D1%82%D0%B5%D0%BA%D1%81%D1%82%D0%B0-%D0%BD%D0%B0-%D0%BA%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0%B8%D0%B8)
 
 
 ### Классификация текста на категории:
@@ -14,8 +14,8 @@
 ****
 #### Обучение моделей
 На данный момент **(28.12.2023)** обучено:
-- 5 моделей машинного обучения из библиотеки `scikit-learn` ( [результаты обучения](https://github.com/ivan-dev-lab/NLP?tab=readme-ov-file#результаты-обучения) )
-- 1 нейронная сеть `Keras` ( [результаты обучения](https://github.com/ivan-dev-lab/NLP?tab=readme-ov-file#результаты-обучения) )
+- 5 моделей машинного обучения из библиотеки `scikit-learn` ( [результаты обучения](https://github.com/ivan-dev-lab/NLP/tree/dev?tab=readme-ov-file#scikit-learn) )
+- 1 нейронная сеть `Keras` ( [результаты обучения](https://github.com/ivan-dev-lab/NLP/tree/dev?tab=readme-ov-file#keras) )
 ****
 #### Результаты обучения
 ##### scikit-learn:
@@ -28,7 +28,7 @@
 ##### Keras
 - `Полносвязная нейронная сеть` = **0.7601918578147888**
 
-( [архитектуры нейронных сетей Keras](https://github.com/ivan-dev-lab/NLP?tab=readme-ov-file#архитектуры-нейронных-сетей-keras) )
+( [архитектуры нейронных сетей Keras](https://github.com/ivan-dev-lab/NLP/tree/dev?tab=readme-ov-file#%D0%B0%D1%80%D1%85%D0%B8%D1%82%D0%B5%D0%BA%D1%82%D1%83%D1%80%D1%8B-%D0%BD%D0%B5%D0%B9%D1%80%D0%BE%D0%BD%D0%BD%D1%8B%D1%85-%D1%81%D0%B5%D1%82%D0%B5%D0%B9-keras) )
 ****
 
 #### Архитектуры нейронных сетей Keras
