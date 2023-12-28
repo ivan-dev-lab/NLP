@@ -3,4 +3,5 @@ data/texts/
 data/docs.csv
 data/preprocessed_docs.csv
 classification/models/sklearn_models/
+classification/models/keras_models/
 __pycache__
