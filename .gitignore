@@ -2,6 +2,6 @@ logs/
 data/texts/
 data/docs.csv
 data/preprocessed_docs.csv
-classification/models/sklearn_models/
-classification/models/keras_models/
+classification/models/sklearn/
+classification/models/keras/
 __pycache__
