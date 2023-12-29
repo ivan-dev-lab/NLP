@@ -7,7 +7,7 @@ import pymorphy3
 import logging
 
 logging.basicConfig (
-    filename='classification/logs/preprocess.log',
+    filename='classification/logs/run.log',
     filemode='w+',
     level=logging.INFO,
     format='%(asctime)s:%(levelname)s:%(message)s',
