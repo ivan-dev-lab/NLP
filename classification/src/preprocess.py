@@ -6,13 +6,17 @@ import re
 import pymorphy3
 import logging
 
-logging.basicConfig (
-    filename='classification/logs/run.log',
-    filemode='w+',
-    level=logging.INFO,
-    format='%(asctime)s:%(levelname)s:%(message)s',
-    encoding='utf8'
-)
+logger = logging.getLogger(__name__)
+
+if len(logger.handlers) == 0:
+    logging.basicConfig(
+        level=logging.INFO,
+        filemode="w+",
+        filename=f"classification/logs/run.log",
+        format="%(asctime)s:%(levelname)s:%(message)s",
+        encoding="utf8" )
+
+logging.getLogger('pymorphy3').setLevel(logging.WARNING)
 
 async def clean_text (text: str) -> str:
     cleaned_text = []

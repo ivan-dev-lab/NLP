@@ -5,13 +5,16 @@ import logging
 import pandas as pd
 import asyncio
 
-logging.basicConfig(
-    level=logging.INFO,
-    filemode="w+",
-    filename=f"classification/logs/run.log",
-    format="%(asctime)s:%(levelname)s:%(message)s",
-    encoding="utf8"
-)
+logger = logging.getLogger(__name__)
+
+if len(logger.handlers) == 0:
+    logging.basicConfig(
+        level=logging.INFO,
+        filemode="w+",
+        filename=f"classification/logs/run.log",
+        format="%(asctime)s:%(levelname)s:%(message)s",
+        encoding="utf8" )
+
 
 MAIN_PAGE = "https://www.kommersant.ru"
 ARCHIVE_PAGE = "https://www.kommersant.ru/archive"
