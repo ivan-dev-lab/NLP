@@ -12,11 +12,9 @@ import asyncio
 from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
 from sklearn.ensemble import RandomForestClassifier,ExtraTreesClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from src.keras_model import create_model
+from src.keras_models import FullyConnected_Keras
 from src.preprocess import preprocess
 from src.parser import parser
-
-
 
 
 logger = logging.getLogger(__name__)
@@ -211,7 +209,7 @@ async def main ():
     # await parser('data/test.csv', days_ago=0),
     # await preprocess('data/test.csv', 'data/preprocessed_test.csv')
 
-    keras_models = [create_model]
+    keras_models = [FullyConnected_Keras]
     keras_models_path = ['classification/models/keras/FullyConnected_Keras.pkl']
 
     sklearn_models = [ DecisionTreeClassifier, ExtraTreeClassifier, RandomForestClassifier, ExtraTreesClassifier, KNeighborsClassifier]
@@ -230,9 +228,9 @@ async def main ():
     work_time = time.time() - start_time
     logger.info(f'время, затраченное на работу программы = {work_time} секунд')
 
-# TODO: написать коллбеки для моделей keras
-# TODO: написать подбор параметров GridSearchCV
 # TODO: написать другие архитектуры для моделей keras
+# TODO: написать подбор параметров GridSearchCV
+# TODO: написать коллбеки для моделей keras
 # TODO: написать модель на pytorch
 
 asyncio.run(main())
