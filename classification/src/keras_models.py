@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def create_model (input_shape: tuple):
+def FullyConnected_Keras (input_shape: tuple):
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Input(shape=((input_shape[0],))))
     model.add(tf.keras.layers.Dense(units=512, activation='relu'))
